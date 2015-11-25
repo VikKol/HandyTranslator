@@ -1,6 +1,7 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-    "editor.formatOnType": true,
-    "editor.wrappingIndent": "indent",
-	"telemetry.enableCrashReporter": false  
+	"editor.tabSize": 4,
+	"editor.formatOnType": true,
+	"editor.wrappingIndent": "indent",
+	"telemetry.enableCrashReporter": false
 }
