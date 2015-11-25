@@ -1,0 +1,4 @@
+[
+	{ "key": "ctrl+r", "command": "workbench.action.tasks.run" },
+	{ "key": "ctrl+shift+r", "command": "workbench.action.tasks.runTask" }
+]
