@@ -1,23 +1,30 @@
 extern crate winapi;
 extern crate user32;
 
-use winapi::windef::{HWND};
+use winapi::winnt::LPCWSTR;
+use winapi::windef::{HWND,HMENU,HBRUSH};
+use winapi::minwindef::{HINSTANCE,UINT,DWORD,WPARAM,LPARAM,LRESULT};
+use winapi::winuser::{MB_ICONEXCLAMATION,MB_OK,CW_USEDEFAULT,WS_OVERLAPPEDWINDOW,WS_VISIBLE,WNDCLASSW};
+use std::os::windows::ffi::OsStrExt;
+use std::ptr::{null,null_mut};
 
 mod ffi;
-use ffi::window::*;
+use ffi::backgroundapp;
 
-fn main()
-{
-    Window::hide_console_window();
-    
-    Window::new(400, 200, true, "HandyTranslator");
+fn main() {
+	let handler: &'static Fn(&UINT) = &handle_msgs;
+	backgroundapp::start("HandyTranslator", handler);
+}
 
-    unsafe 
-    {
-        let mut msg = Window::new_default_msg();        
-        while user32::GetMessageW(&mut msg, 0 as HWND, 0, 0) > 0 {               
-            user32::TranslateMessage(&mut msg);
-            user32::DispatchMessageW(&mut msg);
-        }
-    }
+fn handle_msgs(msg: &UINT) {
+    match msg {
+		&winapi::winuser::WM_CLOSE => 0,  
+		&winapi::winuser::WM_DESTROY => 0, 
+		_ => unsafe { user32::MessageBoxA(
+			0 as HWND, 
+			"Hello from handler".as_ptr() as *mut _, 
+			"Title".as_ptr() as *mut _, 
+			MB_ICONEXCLAMATION | MB_OK)
+		}
+	};
 }
