@@ -1,30 +1,45 @@
 extern crate winapi;
 extern crate user32;
+extern crate kernel32;
 
-use winapi::winnt::LPCWSTR;
-use winapi::windef::{HWND,HMENU,HBRUSH};
-use winapi::minwindef::{HINSTANCE,UINT,DWORD,WPARAM,LPARAM,LRESULT};
-use winapi::winuser::{MB_ICONEXCLAMATION,MB_OK,CW_USEDEFAULT,WS_OVERLAPPEDWINDOW,WS_VISIBLE,WNDCLASSW};
-use std::os::windows::ffi::OsStrExt;
-use std::ptr::{null,null_mut};
+use winapi::windef::{HWND};
+use winapi::minwindef::{UINT,WPARAM,LPARAM,LRESULT};
+use winapi::winuser::{MB_ICONEXCLAMATION,MB_OK};
 
-mod ffi;
-use ffi::backgroundapp;
+mod window;
+mod helpers;
 
 fn main() {
-	let handler: &'static Fn(&UINT) = &handle_msgs;
-	backgroundapp::start("HandyTranslator", handler);
-}
+	window::hide_console_window();
+	let handle: HWND = window::create_window(
+		"HandyTranslator", 
+		true, 580, 400, 
+		Some(window_proc));
 
-fn handle_msgs(msg: &UINT) {
-    match msg {
-		&winapi::winuser::WM_CLOSE => 0,  
-		&winapi::winuser::WM_DESTROY => 0, 
-		_ => unsafe { user32::MessageBoxA(
+	helpers::register_apphotkey(handle);
+
+	let mut msg = window::create_window_msg();
+    unsafe {
+        while user32::GetMessageW(&mut msg, 0 as HWND, 0, 0) > 0 {               
+            user32::TranslateMessage(&mut msg);
+            user32::DispatchMessageW(&mut msg);
+        }
+    }	
+	
+	helpers::unregister_apphotkey(handle);
+}
+	
+unsafe extern "system" fn window_proc(h_wnd: HWND, msg: UINT, w_param: WPARAM, l_param: LPARAM) -> LRESULT {
+	if msg == winapi::winuser::WM_HOTKEY {
+		user32::MessageBoxA(
 			0 as HWND, 
-			"Hello from handler".as_ptr() as *mut _, 
+			"Hotkey".as_ptr() as *mut _, 
 			"Title".as_ptr() as *mut _, 
-			MB_ICONEXCLAMATION | MB_OK)
-		}
-	};
+			MB_ICONEXCLAMATION | MB_OK);
+	}
+	match msg {
+		winapi::winuser::WM_CLOSE => { user32::DestroyWindow(h_wnd); 0 },  
+		winapi::winuser::WM_DESTROY => { user32::PostQuitMessage(0); 0 }, 
+		_ => user32::DefWindowProcW(h_wnd, msg, w_param, l_param)
+	}
 }
