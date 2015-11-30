@@ -26,6 +26,7 @@ pub fn create_window(title: &'static str, visible: bool, width: i32, height: i32
 		lpszMenuName: 0 as LPCWSTR,
 		lpszClassName: w_class_name,
 	};
+	
 	unsafe { user32::RegisterClassW(&wnd) };
 
 	// Create window			

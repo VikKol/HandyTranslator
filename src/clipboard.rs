@@ -30,7 +30,10 @@ fn get_data_from_clipboard<'a>() -> String {
 		//kernel32::GlobalLock(clip); 
 
 		let c_str = CString::from_raw(clip as *mut libc::c_char);
-		text = c_str.to_str().unwrap().to_owned();
+		match c_str.to_str() {
+			Ok(s) => text = s.to_owned(),
+			_ => text = "".to_owned() 
+		}
 
 		//kernel32::GlobalUnlock(clip);
 	};
