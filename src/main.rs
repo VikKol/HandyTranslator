@@ -10,18 +10,17 @@ mod window;
 mod helpers;
 mod clipboard;
 
+static translator = Translator::new("testUrl");
+
 fn main() {
 	window::hide_console_window();
 	
-	//let handler = new AppHandler { translator, clipboard }
-	//use handler.window_proc
-	
-	let handle: HWND = window::create_window(
+	let wnd_handle: HWND = window::create_window(
 		"HandyTranslator", 
 		false, 580, 400, 
 		Some(window_proc));
 
-	helpers::register_apphotkey(handle);
+	helpers::register_apphotkey(wnd_handle);
 
 	let mut msg = window::create_window_msg();
     unsafe {
@@ -31,7 +30,7 @@ fn main() {
         }
     }	
 	
-	helpers::unregister_apphotkey(handle);
+	helpers::unregister_apphotkey(wnd_handle);
 }
 	
 unsafe extern "system" fn window_proc(h_wnd: HWND, msg: UINT, w_param: WPARAM, l_param: LPARAM) -> LRESULT {
