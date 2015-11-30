@@ -17,7 +17,7 @@ fn main() {
 	//use handler.window_proc
 	let handle: HWND = window::create_window(
 		"HandyTranslator", 
-		true, 580, 400, 
+		false, 580, 400, 
 		Some(window_proc));
 
 	helpers::register_apphotkey(handle);
@@ -41,13 +41,12 @@ unsafe extern "system" fn window_proc(h_wnd: HWND, msg: UINT, w_param: WPARAM, l
 		//get from clipboard
 		//translate if not null
 		//show window with text
-		/*
+		
 		user32::MessageBoxA(
 			0 as HWND, 
 			text.as_ptr() as *mut _, 
 			"Title".as_ptr() as *mut _, 
 			MB_ICONEXCLAMATION | MB_OK);
-		*/
 	}
 	match msg {
 		winapi::winuser::WM_CLOSE => { user32::DestroyWindow(h_wnd); 0 },  

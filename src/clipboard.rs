@@ -6,8 +6,7 @@ extern crate libc;
 use winapi::windef::{HWND};
 use winapi::winnt::{HANDLE};
 use winapi::minwindef::{UINT};
-use winapi::winuser::{INPUT,KEYBDINPUT,VK_CONTROL,KEYEVENTF_KEYUP,MB_ICONEXCLAMATION,MB_OK};
-//use libc;
+use winapi::winuser::{INPUT,KEYBDINPUT,VK_CONTROL,KEYEVENTF_KEYUP};
 
 use std::mem;
 use std::thread;
@@ -22,34 +21,28 @@ pub fn get_selection() -> String {
 	get_data_from_clipboard()
 }
 
-fn get_data_from_clipboard() -> String {
+fn get_data_from_clipboard<'a>() -> String {
 	let text: String;
 	unsafe { 
 		user32::OpenClipboard(0 as HWND);
 		let clip: HANDLE = user32::GetClipboardData(CF_TEXT);
 		
 		//kernel32::GlobalLock(clip); 
-		
+
 		let c_str = CString::from_raw(clip as *mut libc::c_char);
-		text = c_str.to_str().unwrap().to_string();
-		
+		text = c_str.to_str().unwrap().to_owned();
+
 		//kernel32::GlobalUnlock(clip);
-	
-		user32::MessageBoxA(
-			0 as HWND, 
-			text.as_ptr() as *mut _, 
-			"Title".as_ptr() as *mut _, 
-			MB_ICONEXCLAMATION | MB_OK);
-	};		
+	};
 	text
 }
 
 fn simulate_ctrl_c() {
-	let mut input = INPUT { 
-		type_: winapi::INPUT_KEYBOARD, 
-		u: Default::default()
-	}; 
 	unsafe {
+		let mut input = INPUT { 
+			type_: winapi::INPUT_KEYBOARD, 
+			u: Default::default()
+		}; 
 		*input.ki_mut() = KEYBDINPUT { 
 			wVk: 0,
 			wScan: 0,
@@ -58,28 +51,30 @@ fn simulate_ctrl_c() {
 			dwExtraInfo: 0
 		};
 		
-		// Delay
-		//thread::sleep(Duration::new(1, 0));
-
 		// Press the "Ctrl" key
 		input.ki_mut().wVk = VK_CONTROL as u16;
 		user32::SendInput(1, &mut input, mem::size_of::<INPUT>() as i32);
-
+		
+		thread::sleep(Duration::from_millis(200));
+		
  		// Press the "C" key
 		input.ki_mut().wVk = VK_C;
 		user32::SendInput(1, &mut input, mem::size_of::<INPUT>() as i32);
 
-		//thread::sleep(Duration::from_millis(500));
+		thread::sleep(Duration::from_millis(200));
 
         // Release the "C" key
 		input.ki_mut().wVk = VK_C;
+		input.ki_mut().dwFlags = KEYEVENTF_KEYUP;
 		user32::SendInput(1, &mut input, mem::size_of::<INPUT>() as i32);
+ 
+		thread::sleep(Duration::from_millis(200));
  
         // Release the "Ctrl" key
 		input.ki_mut().wVk = VK_CONTROL as u16;
 		input.ki_mut().dwFlags = KEYEVENTF_KEYUP;
 		user32::SendInput(1, &mut input, mem::size_of::<INPUT>() as i32);
 		
-		//thread::sleep(Duration::from_millis(500));
+		thread::sleep(Duration::from_millis(200));
 	};
 }
