@@ -9,8 +9,10 @@ use winapi::winuser::{MB_ICONEXCLAMATION,MB_OK};
 mod window;
 mod helpers;
 mod clipboard;
+mod translator;
+use translator::*;
 
-static translator = Translator::new("testUrl");
+static translator: Translator = Translator::new("testUrl");
 
 fn main() {
 	window::hide_console_window();
@@ -41,7 +43,7 @@ unsafe extern "system" fn window_proc(h_wnd: HWND, msg: UINT, w_param: WPARAM, l
 			
 			//translate
 			
-			user32::MessageBoxA(
+			user32::MessageBoxW(
 				0 as HWND, 
 				translated.as_ptr() as *mut _, 
 				"Title".as_ptr() as *mut _, 
