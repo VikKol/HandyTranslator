@@ -1,2 +1,2 @@
 # HandyTranslator
-Handy translator written in Rust. Learning new language.
+Handy translator written in Rust. Learning new programming language.
