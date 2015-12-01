@@ -8,6 +8,7 @@ winapi = "0.2.5"
 user32-sys = "0.1.2"
 kernel32-sys = "0.2.1"
 libc = "0.2.2"
+lazy_static = "0.1.15"
 
 [dependencies.hyper]
 version = "*"

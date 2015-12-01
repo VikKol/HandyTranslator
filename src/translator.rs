@@ -5,19 +5,25 @@ use self::hyper::status::StatusCode;
 
 use std::io::prelude::*;
 use std::error::Error;
+use bing_auth_client::BingAuthClient;
 
 pub struct Translator {
 	url: &'static str,
-	//token_provider: BingAuthClient
+	token_provider: BingAuthClient
 }
 
 impl Translator {
-	pub fn new(url: &'static str) -> Self {
-		Translator { url: url }
+	pub fn new(sts_url: &'static str, client_id: &'static str, client_secret: &'static str, translator_url: &'static str) -> Self {
+		Translator {
+			url: translator_url,
+			token_provider: BingAuthClient::new(sts_url, client_id, client_secret)
+		}
 	}
 	
 	pub fn translate(&self, text: String, from: &'static str, to: &'static str) -> String {
 		let auth_token = format!("Bearer {0}", self.get_token());
+		auth_token
+		/*
 		let requiest_url = format!("{0}?text={1}&from={2}&to={3}", self.url, text, from, to);
 				
 		let client = Client::new();
@@ -41,9 +47,10 @@ impl Translator {
 				format!("StatusCode: {0}; Response: {1}", response.status, buf)
 			}
 		}
+		*/
 	}
 	
-	fn get_token(&self) -> &'static str {
-		"token"
+	fn get_token(&self) -> String {
+		self.token_provider.get_access_token()
 	}
 }

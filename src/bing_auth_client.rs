@@ -1,56 +1,55 @@
-/*
-const REFRESH_TOKEN_IN_MIN: i32 = 9;
-static DATAMARKET_ACCESS_URI = "https://datamarket.accesscontrol.windows.net/v2/OAuth2-13";
+extern crate hyper;
+
+use self::hyper::{Client};
+use self::hyper::client::Body;
+use self::hyper::header::{Headers,Connection};
+use self::hyper::status::StatusCode;
+
+use std::io::prelude::*;
+use std::error::Error;
 
 pub struct BingAuthClient {
-	_client_id: &'static str,
-	_client_secret: &'static str,
-	_request_data: &'static str,
-	_token: String
+	base_url: &'static str,
+	request_details: String
 }
 
 impl BingAuthClient {
-	pub fn new(clientId: &'static str, clientSecret: &'static str) -> self {
-		this.clientId = clientId;
-		this.clientSecret = clientSecret;
-		
-		this.request = string.Format("grant_type=client_credentials&client_id={0}&client_secret={1}&scope=http://api.microsofttranslator.com", HttpUtility.UrlEncode(clientId), HttpUtility.UrlEncode(clientSecret));
-		
-		//this.token = HttpPost(DatamarketAccessUri, this.request);
+	pub fn new(base_url: &'static str, client_id: &'static str, client_secret: &'static str) -> Self {
+		BingAuthClient {
+			base_url: base_url,
+			request_details: format!("grant_type=client_credentials&client_id={0}&client_secret={1}&scope=http://api.microsofttranslator.com", 
+						 			 client_id, 
+									 client_secret)
+		}
 	}
 	
-	public AdmAccessToken GetAccessToken()
-        {
-			return this.token;
-        }
-		private void RenewAccessToken()
-        {
-            AdmAccessToken newAccessToken = HttpPost(DatamarketAccessUri, this.request);
-			//swap the new token with old one
-			//Note: the swap is thread unsafe
-			this.token = newAccessToken;
+	pub fn get_access_token(&self) -> String {				
+		let bytes = self.request_details.to_string().into_bytes();
+		let client = Client::new();
+		let mut headers = Headers::new();
+		headers.set(Connection::close());
+		headers.set_raw("ContentType", vec!["application/x-www-form-urlencoded".to_string().into_bytes()]);
+		headers.set_raw("ContentLength", vec![format!("{}", bytes.len()).into_bytes()]);
+		
+		let response = client
+			.post(&*self.base_url)
+			.headers(headers)
+			.body(Body::BufBody(&bytes[..], bytes.len()))	
+			.send();
+		
+		match response {
+			Err(why) => Error::description(&why).to_string(),
+			Ok(mut resp) => {
+				let mut buf = String::new();
+				match resp.read_to_string(&mut buf) {
+					Err(nested_why) => Error::description(&nested_why).to_string(),
+					Ok(_) => if resp.status == StatusCode::Ok {
+						buf
+					} else {
+						format!("StatusCode: {0}; Response: {1}", resp.status, buf)
+					}
+				}
+			}
 		}
-		
-		
-		private AdmAccessToken HttpPost(string DatamarketAccessUri, string requestDetails)
-        {
-			//Prepare OAuth request 
-            WebRequest webRequest = WebRequest.Create(DatamarketAccessUri);
-            webRequest.ContentType = "application/x-www-form-urlencoded";
-            webRequest.Method = "POST";
-			byte[] bytes = Encoding.ASCII.GetBytes(requestDetails);
-            webRequest.ContentLength = bytes.Length;
-			using (Stream outputStream = webRequest.GetRequestStream())
-            {
-                outputStream.Write(bytes, 0, bytes.Length);
-            }
-			using (WebResponse webResponse = webRequest.GetResponse())
-            {
-                DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(AdmAccessToken));
-				//Get deserialized object from JSON stream
-                AdmAccessToken token = (AdmAccessToken)serializer.ReadObject(webResponse.GetResponseStream());
-				return token;
-            }
-        }
+	}
 }
-*/
