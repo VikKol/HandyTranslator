@@ -1,3 +1,4 @@
+#[derive(Clone)]
 pub struct AppSettings {
 	pub sts_url: &'static str,
 	pub client_id: &'static str,

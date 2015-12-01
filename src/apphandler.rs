@@ -14,7 +14,7 @@ static mut _started: bool = false;
 static mut _appsettings: Option<AppSettings> = None;
 lazy_static! {
 	static ref _settings: AppSettings = {
-		unsafe { _appsettings.as_ref().unwrap() }
+		unsafe { _appsettings.as_ref().unwrap().clone() }
 	};
     static ref _translator: Translator = {
 		 Translator::new(_settings.sts_url, _settings.client_id, _settings.client_secret, _settings.translator_url)
