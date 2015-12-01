@@ -10,7 +10,8 @@ use std::error::Error;
 
 pub struct BingAuthClient {
 	base_url: &'static str,
-	request_details: String
+	request_details: String,
+	http_client: Client
 }
 
 impl BingAuthClient {
@@ -19,20 +20,20 @@ impl BingAuthClient {
 			base_url: base_url,
 			request_details: format!("grant_type=client_credentials&client_id={0}&client_secret={1}&scope=http://api.microsofttranslator.com", 
 						 			 client_id, 
-									 client_secret)
+									 client_secret),
+			http_client: Client::new() 
 		}
 	}
 	
 	pub fn get_access_token(&self) -> String {				
 		let bytes = self.request_details.to_string().into_bytes();
-		let client = Client::new();
 		let mut headers = Headers::new();
 		headers.set(Connection::close());
 		headers.set_raw("ContentType", vec!["application/x-www-form-urlencoded".to_string().into_bytes()]);
 		headers.set_raw("ContentLength", vec![format!("{}", bytes.len()).into_bytes()]);
 		
-		let response = client
-			.post(&*self.base_url)
+		let response = self.http_client
+			.post(self.base_url)
 			.headers(headers)
 			.body(Body::BufBody(&bytes[..], bytes.len()))	
 			.send();

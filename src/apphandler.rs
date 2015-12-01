@@ -27,8 +27,8 @@ pub fn init(settings: AppSettings) -> WNDPROC {
 			_appsettings = Some(settings);
 			_started = true;
 		}
-		Some(window_proc)
 	}
+	Some(window_proc)
 }
 
 unsafe extern "system" fn window_proc(h_wnd: HWND, msg: UINT, w_param: WPARAM, l_param: LPARAM) -> LRESULT {
