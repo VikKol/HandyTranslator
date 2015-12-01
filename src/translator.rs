@@ -1,23 +1,16 @@
 extern crate hyper;
 
-#[cfg(feature = "serde-serialization")]
-extern crate serde;
+use std::io::prelude::*;
+use std::error::Error;
 
-use std::env;
-use std::io;
-
-use self::hyper::Url;
-use self::hyper::Client;
-use self::hyper::header::Connection;
+use self::hyper::{Client};
+use self::hyper::header::{Connection,Headers};
+use self::hyper::status::StatusCode;
 
 static FROM: &'static str = "en";
-static TO: &'static str = "ua";
+static TO: &'static str = "uk";
 
-header! { 
-	(Authorization, "Authorization") => [String] 
-}
-
-struct Translator {
+pub struct Translator {
 	url: &'static str
 }
 
@@ -27,26 +20,32 @@ impl Translator {
 	}
 	
 	pub fn translate(&self, text: String) -> String {
-		let requiestUrl = self.url.to_string() + text + "&from=" + FROM + "&to=" + TO; 		
-		let authToken = "Bearer".to_string() + " " + "token";//admToken.access_token;
-
+		let requiest_url = format!("{0}?text={1}&from={2}&to={3}", self.url, text, FROM, TO);
+		let auth_token = "Bearer".to_owned(); //.to_string() + " " + "token";
+				
 		let client = Client::new();
-	
-		let mut response = client
-			.get(&*self.url)			
-			.header(Connection::close())
-			.header(Authorization(authToken))
-			.send()
-			.unwrap();
 		
-		if response.status == 200 {
-			res
-		} else {
-			"".to_owned()
+		let mut headers = Headers::new();
+		headers.set(Connection::close());
+		headers.set_raw("Authorization", vec![auth_token.into_bytes()]);
+		
+		let mut response = client
+			.get(&*requiest_url)			
+			.headers(headers)
+			.send().unwrap();
+				
+		let mut buf = String::new();
+		match response.read_to_string(&mut buf) {
+			Err(why) => Error::description(&why).to_string(),
+			Ok(_) => if response.status == StatusCode::Ok {
+				buf
+			} else {
+				format!("StatusCode: {0}; Response: {1}", response.status, buf)
+			}
 		}
 	}
 	
 	fn get_token(&self) -> &'static str {
-		""
+		"token"
 	}
 }

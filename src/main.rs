@@ -2,17 +2,16 @@ extern crate winapi;
 extern crate user32;
 extern crate kernel32;
 
-use winapi::windef::{HWND};
-use winapi::minwindef::{UINT,WPARAM,LPARAM,LRESULT};
-use winapi::winuser::{MB_ICONEXCLAMATION,MB_OK};
-
 mod window;
 mod helpers;
 mod clipboard;
 mod translator;
-use translator::*;
 
-static translator: Translator = Translator::new("testUrl");
+use winapi::windef::{HWND};
+use winapi::minwindef::{UINT,WPARAM,LPARAM,LRESULT};
+use winapi::winuser::{MB_ICONEXCLAMATION,MB_OK};
+
+use translator::Translator;
 
 fn main() {
 	window::hide_console_window();
@@ -39,11 +38,10 @@ unsafe extern "system" fn window_proc(h_wnd: HWND, msg: UINT, w_param: WPARAM, l
 	if msg == winapi::winuser::WM_HOTKEY {
 		let text = clipboard::get_selection();
 		if text != "" {
-			let translated = text;
+			let translator: Translator = Translator::new("http://api.microsofttranslator.com/v2/Http.svc/Translate");
+			let translated = translator.translate(text);
 			
-			//translate
-			
-			user32::MessageBoxW(
+			user32::MessageBoxA(
 				0 as HWND, 
 				translated.as_ptr() as *mut _, 
 				"Title".as_ptr() as *mut _, 
