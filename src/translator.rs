@@ -1,17 +1,14 @@
 extern crate hyper;
+use self::hyper::{Client};
+use self::hyper::header::{Headers,Connection};
+use self::hyper::status::StatusCode;
 
 use std::io::prelude::*;
 use std::error::Error;
 
-use self::hyper::{Client};
-use self::hyper::header::{Connection,Headers};
-use self::hyper::status::StatusCode;
-
-static FROM: &'static str = "en";
-static TO: &'static str = "uk";
-
 pub struct Translator {
-	url: &'static str
+	url: &'static str,
+	//token_provider: BingAuthClient
 }
 
 impl Translator {
@@ -19,9 +16,9 @@ impl Translator {
 		Translator { url: url }
 	}
 	
-	pub fn translate(&self, text: String) -> String {
-		let requiest_url = format!("{0}?text={1}&from={2}&to={3}", self.url, text, FROM, TO);
-		let auth_token = "Bearer".to_owned(); //.to_string() + " " + "token";
+	pub fn translate(&self, text: String, from: &'static str, to: &'static str) -> String {
+		let auth_token = format!("Bearer {0}", self.get_token());
+		let requiest_url = format!("{0}?text={1}&from={2}&to={3}", self.url, text, from, to);
 				
 		let client = Client::new();
 		
@@ -32,7 +29,8 @@ impl Translator {
 		let mut response = client
 			.get(&*requiest_url)			
 			.headers(headers)
-			.send().unwrap();
+			.send()
+			.unwrap();
 				
 		let mut buf = String::new();
 		match response.read_to_string(&mut buf) {

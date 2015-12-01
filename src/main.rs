@@ -1,25 +1,21 @@
 extern crate winapi;
 extern crate user32;
-extern crate kernel32;
+use winapi::windef::{HWND};
 
 mod window;
 mod helpers;
 mod clipboard;
 mod translator;
+mod apphandler;
 
-use winapi::windef::{HWND};
-use winapi::minwindef::{UINT,WPARAM,LPARAM,LRESULT};
-use winapi::winuser::{MB_ICONEXCLAMATION,MB_OK};
-
-use translator::Translator;
+static FROM: &'static str = "en";
+static TO: &'static str = "uk";
 
 fn main() {
 	window::hide_console_window();
-	
-	let wnd_handle: HWND = window::create_window(
-		"HandyTranslator", 
-		false, 580, 400, 
-		Some(window_proc));
+
+	let hanlder = apphandler::init(FROM, TO, "http://api.microsofttranslator.com/v2/Http.svc/Translate");
+	let wnd_handle: HWND = window::create_window("HandyTranslator", false, 580, 400, hanlder);
 
 	helpers::register_apphotkey(wnd_handle);
 
@@ -30,27 +26,6 @@ fn main() {
             user32::DispatchMessageW(&mut msg);
         }
     }	
-	
+
 	helpers::unregister_apphotkey(wnd_handle);
-}
-	
-unsafe extern "system" fn window_proc(h_wnd: HWND, msg: UINT, w_param: WPARAM, l_param: LPARAM) -> LRESULT {
-	if msg == winapi::winuser::WM_HOTKEY {
-		let text = clipboard::get_selection();
-		if text != "" {
-			let translator: Translator = Translator::new("http://api.microsofttranslator.com/v2/Http.svc/Translate");
-			let translated = translator.translate(text);
-			
-			user32::MessageBoxA(
-				0 as HWND, 
-				translated.as_ptr() as *mut _, 
-				"Title".as_ptr() as *mut _, 
-				MB_ICONEXCLAMATION | MB_OK);
-		}
-	}
-	match msg {
-		winapi::winuser::WM_CLOSE => { user32::DestroyWindow(h_wnd); 0 },  
-		winapi::winuser::WM_DESTROY => { user32::PostQuitMessage(0); 0 }, 
-		_ => user32::DefWindowProcW(h_wnd, msg, w_param, l_param)
-	}
 }
