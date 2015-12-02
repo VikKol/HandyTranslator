@@ -3,15 +3,18 @@ extern crate user32;
 extern crate kernel32;
 extern crate lazy_static;
 extern crate kiss_ui;
+extern crate clipboard_win;
 use winapi::windef::{HWND};
 use winapi::minwindef::{UINT,WPARAM,LPARAM,LRESULT};
-use winapi::winuser::{WNDPROC,MB_ICONEXCLAMATION,MB_OK};
+use winapi::winuser::{WNDPROC};
 
 use kiss_ui::container::Horizontal;
 use kiss_ui::dialog::Dialog;
 use kiss_ui::text::Label;
 
-use clipboard;
+use self::clipboard_win::get_clipboard_string;
+
+use helpers;
 use appsettings::*;
 use translator::Translator;
 
@@ -38,7 +41,8 @@ pub fn init(settings: AppSettings) -> WNDPROC {
 
 unsafe extern "system" fn window_proc(h_wnd: HWND, msg: UINT, w_param: WPARAM, l_param: LPARAM) -> LRESULT {
 	if msg == winapi::winuser::WM_HOTKEY {
-		let text = "text".to_owned();//clipboard::get_selection();
+		helpers::simulate_ctrl_c();
+		let text = get_clipboard_string().unwrap();
 		if text != "" {
 			let translated = TRANSLATOR.translate(text, SETTINGS.source_lang, SETTINGS.target_lang);
 			kiss_ui::show_gui(|| {
@@ -50,15 +54,8 @@ unsafe extern "system" fn window_proc(h_wnd: HWND, msg: UINT, w_param: WPARAM, l
 					)
 				)
 				.set_title("HandyTranslator")
-				.set_size_pixels(640, 480)
+				.set_size_pixels(580, 400)
 			});
-			/*
-			user32::MessageBoxW(
-				0 as HWND, 
-				translated.as_ptr() as *mut _, 
-				"Title".as_ptr() as *mut _, 
-				MB_ICONEXCLAMATION | MB_OK);
-			*/
 		}
 	}
 	match msg {

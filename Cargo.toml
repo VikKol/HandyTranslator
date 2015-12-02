@@ -8,8 +8,12 @@ winapi = "0.2.5"
 user32-sys = "0.1.2"
 kernel32-sys = "0.2.1"
 libc = "0.2.2"
+clipboard-win = "*"
 lazy_static = "*"
 serde_json = "*"
+
+[dependencies.keystroke]
+git = "https://github.com/retep998/keystroke-rs.git"
 
 [dependencies.url]
 git = "https://github.com/servo/rust-url"

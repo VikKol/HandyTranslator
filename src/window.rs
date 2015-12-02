@@ -10,6 +10,10 @@ use std::ptr::{null_mut};
 
 use helpers;
 
+pub fn create_background(title: &'static str, window_proc: WNDPROC) -> HWND {
+	create_window(title, false, 0, 0, window_proc)
+}
+
 pub fn create_window(title: &'static str, visible: bool, width: i32, height: i32, window_proc: WNDPROC) -> HWND {
 	// Register class
 	let class_name = "window_".to_string() + title;
@@ -56,12 +60,5 @@ pub fn create_window_msg() -> winapi::winuser::MSG {
 		lParam : 0 as LPARAM,
 		time : 0 as DWORD,
 		pt : winapi::windef::POINT { x: 0, y: 0, }
-	}
-}
-
-pub fn hide_console_window() {
-	let window = unsafe { kernel32::GetConsoleWindow() };
-	if window != null_mut() {
-		unsafe { user32::ShowWindow (window, winapi::SW_HIDE) };
 	}
 }
