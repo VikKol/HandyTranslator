@@ -8,9 +8,17 @@ winapi = "0.2.5"
 user32-sys = "0.1.2"
 kernel32-sys = "0.2.1"
 libc = "0.2.2"
-lazy_static = "0.1.15"
+lazy_static = "*"
+serde_json = "*"
 
-[dependencies.hyper]
-version = "*"
+[dependencies.url]
+git = "https://github.com/servo/rust-url"
 default-features = false
 features = []
+
+[dependencies.hyper]
+default-features = false
+features = ["ssl"]
+
+[dependencies.kiss-ui]
+git = "https://github.com/cybergeek94/kiss-ui"

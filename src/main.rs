@@ -1,5 +1,8 @@
 #[macro_use]
 extern crate lazy_static;
+#[macro_use]
+extern crate kiss_ui;
+
 extern crate winapi;
 extern crate user32;
 use winapi::windef::{HWND};
@@ -8,7 +11,7 @@ mod appsettings;
 mod window;
 mod helpers;
 mod clipboard;
-mod bing_auth_client;
+mod stsclient;
 mod translator;
 mod apphandler;
 use appsettings::*;
@@ -18,14 +21,15 @@ fn main() {
 
 	let settings = AppSettings {
 		sts_url: "https://datamarket.accesscontrol.windows.net/v2/OAuth2-13",
-		client_id: "clientid",
-		client_secret: "clientsecret", 
+		scope: "http://api.microsofttranslator.com",
+		client_id: "client_id",
+		client_secret: "client_secret", 
 		translator_url: "http://api.microsofttranslator.com/v2/Http.svc/Translate",
 		source_lang: "en", 
 		target_lang: "uk"
-	};
+	};	
 	let hanlder = apphandler::init(settings);
-	let wnd_handle: HWND = window::create_window("HandyTranslator", false, 580, 400, hanlder);
+	let wnd_handle: HWND = window::create_window("HandyTranslator", true, 580, 400, hanlder);
 
 	helpers::register_apphotkey(wnd_handle);
 

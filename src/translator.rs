@@ -5,52 +5,52 @@ use self::hyper::status::StatusCode;
 
 use std::io::prelude::*;
 use std::error::Error;
-use bing_auth_client::BingAuthClient;
+use stsclient::{StsClient};
 
 pub struct Translator {
 	url: &'static str,
-	token_provider: BingAuthClient
+	stsclient: StsClient,
+	http_client: Client
 }
 
 impl Translator {
-	pub fn new(sts_url: &'static str, client_id: &'static str, client_secret: &'static str, translator_url: &'static str) -> Self {
+	pub fn new(sts_url: &'static str, client_id: &'static str, client_secret: &'static str, scope: &'static str, translator_url: &'static str) -> Self {
 		Translator {
 			url: translator_url,
-			token_provider: BingAuthClient::new(sts_url, client_id, client_secret)
+			http_client: Client::new(),
+			stsclient: StsClient::new(sts_url, client_id, client_secret, scope)
 		}
 	}
 	
 	pub fn translate(&self, text: String, from: &'static str, to: &'static str) -> String {
-		let auth_token = format!("Bearer {0}", self.get_token());
-		auth_token
-		/*
+		let token: String;
+		match self.stsclient.get_access_token() {
+			Err(why) => return why,
+			Ok(response) => token = response.access_token 
+		};
+
+		let auth_token = format!("Bearer {0}", token);
 		let requiest_url = format!("{0}?text={1}&from={2}&to={3}", self.url, text, from, to);
-				
-		let client = Client::new();
-		
+
 		let mut headers = Headers::new();
 		headers.set(Connection::close());
 		headers.set_raw("Authorization", vec![auth_token.into_bytes()]);
+		headers.set_raw("Accept", vec!["application/json".to_owned().into_bytes()]);
 		
-		let mut response = client
+		let mut response = self.http_client
 			.get(&*requiest_url)			
 			.headers(headers)
 			.send()
 			.unwrap();
 				
-		let mut buf = String::new();
-		match response.read_to_string(&mut buf) {
+		let mut content = String::new();
+		match response.read_to_string(&mut content) {
 			Err(why) => Error::description(&why).to_string(),
 			Ok(_) => if response.status == StatusCode::Ok {
-				buf
+				content
 			} else {
-				format!("StatusCode: {0}; Response: {1}", response.status, buf)
+				format!("StatusCode: {0}; Response: {1}", response.status, content)
 			}
 		}
-		*/
-	}
-	
-	fn get_token(&self) -> String {
-		self.token_provider.get_access_token()
 	}
 }
