@@ -13,7 +13,7 @@ lazy_static = "*"
 serde_json = "*"
 
 [dependencies.keystroke]
-git = "https://github.com/retep998/keystroke-rs.git"
+git = "https://github.com/VikKol/keystroke-rs.git"
 
 [dependencies.url]
 git = "https://github.com/servo/rust-url"

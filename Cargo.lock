@@ -5,7 +5,7 @@ dependencies = [
  "clipboard-win 1.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "hyper 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "kernel32-sys 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "keystroke 0.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "keystroke 0.0.2 (git+https://github.com/VikKol/keystroke-rs.git)",
  "kiss-ui 0.1.0 (git+https://github.com/cybergeek94/kiss-ui)",
  "lazy_static 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -113,7 +113,7 @@ dependencies = [
 [[package]]
 name = "keystroke"
 version = "0.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+source = "git+https://github.com/VikKol/keystroke-rs.git#f668806ac3fea7b0407f2e81b333ba0d3c6c7ce4"
 dependencies = [
  "user32-sys 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "winapi 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
