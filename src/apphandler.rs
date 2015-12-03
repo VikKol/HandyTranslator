@@ -11,7 +11,7 @@ use winapi::winuser::{WNDPROC};
 use kiss_ui::prelude::*;
 use kiss_ui::text::*;
 use kiss_ui::button::Button;
-use kiss_ui::container::{HAlign,Vertical};
+use kiss_ui::container::{Vertical};
 
 use self::clipboard_win::get_clipboard_string;
 

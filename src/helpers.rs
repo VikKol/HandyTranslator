@@ -1,21 +1,15 @@
 extern crate winapi;
 extern crate user32;
-extern crate kernel32;
-extern crate libc;
 extern crate keystroke;
 use winapi::windef::{HWND};
-use winapi::winuser::{INPUT,KEYBDINPUT,VK_CONTROL,KEYEVENTF_KEYUP};
-
 use self::keystroke::*;
 
 use std::os::windows::ffi::OsStrExt;
 use std::ffi::OsStr;
 use std::thread;
 use std::time::Duration;
-use std::mem;
 
 const HOT_KEY_ID: i32 = 1;
-const VK_C: u16 = 0x43;
 const VK_Q: u32 = 81;
 const MOD_ALT: u32 = 0x0001;
 

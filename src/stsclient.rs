@@ -6,14 +6,17 @@ use self::hyper::{Client};
 use self::hyper::status::StatusCode;
 
 use std::io::prelude::*;
+use std::error::Error;
 use std::collections::BTreeMap;
 
 pub struct StsClient {
     base_url: &'static str,
     request_details: String,
-    http_client: Client
+    http_client: Client,
+    token: Option<StsToken>
 }
 
+#[derive(Clone)]
 pub struct StsToken {
     pub access_token: String,
     pub token_type: String,
@@ -31,11 +34,16 @@ impl StsClient {
                                       percent_encode(client_id.to_string().as_bytes(), FORM_URLENCODED_ENCODE_SET),
                                       percent_encode(client_secret.to_string().as_bytes(), FORM_URLENCODED_ENCODE_SET),
                                       scope),
-            http_client: Client::new()
+            http_client: Client::new(),
+            token: None
         }
     }
 
-    pub fn get_access_token(&self) -> StsResponse {
+    pub fn get_access_token(&self) -> Option<StsToken> {
+        self.token.clone()
+    }
+
+    pub fn refresh_token(mut self) -> StsResponse {
         let mut response = self.http_client
             .post(self.base_url)
             .body(&self.request_details)
@@ -44,9 +52,11 @@ impl StsClient {
 
         if response.status == StatusCode::Ok {
             let mut content = String::new();
-            response.read_to_string(&mut content);
-            let token = self.deserialize_content(&content);
-            Ok(token)
+            if let Err(why) = response.read_to_string(&mut content) {
+                return Err(format!("Failed to read the response: {}", Error::description(&why)))
+            }
+            self.token = Some(self.deserialize_content(&content));
+            Ok(self.token.clone().unwrap())
         } else {
             Err(format!("{:?}", response.status_raw()))
         }
