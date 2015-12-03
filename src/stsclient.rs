@@ -29,8 +29,8 @@ impl StsClient {
             base_url: base_url,
             request_details: format!("grant_type=client_credentials&client_id={0}&client_secret={1}&scope={2}",
                                       percent_encode(client_id.to_string().as_bytes(), FORM_URLENCODED_ENCODE_SET),
-                                     percent_encode(client_secret.to_string().as_bytes(), FORM_URLENCODED_ENCODE_SET),
-                                     scope),
+                                      percent_encode(client_secret.to_string().as_bytes(), FORM_URLENCODED_ENCODE_SET),
+                                      scope),
             http_client: Client::new()
         }
     }

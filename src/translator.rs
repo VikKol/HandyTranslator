@@ -14,7 +14,13 @@ pub struct Translator {
 }
 
 impl Translator {
-    pub fn new(sts_url: &'static str, client_id: &'static str, client_secret: &'static str, scope: &'static str, translator_url: &'static str) -> Self {
+    pub fn new(
+        sts_url: &'static str,
+        client_id: &'static str,
+        client_secret: &'static str,
+        scope: &'static str,
+        translator_url: &'static str)
+    -> Self {
         Translator {
             url: translator_url,
             http_client: Client::new(),
@@ -35,7 +41,6 @@ impl Translator {
         let mut headers = Headers::new();
         headers.set(Connection::close());
         headers.set_raw("Authorization", vec![auth_token.into_bytes()]);
-        headers.set_raw("Accept", vec!["application/json".to_owned().into_bytes()]);
 
         let mut response = self.http_client
             .get(&*requiest_url)
