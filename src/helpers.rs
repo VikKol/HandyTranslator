@@ -6,7 +6,7 @@ extern crate keystroke;
 use winapi::windef::{HWND};
 use winapi::winuser::{INPUT,KEYBDINPUT,VK_CONTROL,KEYEVENTF_KEYUP};
 
-use keystroke:*;
+use self::keystroke::*;
 
 use std::os::windows::ffi::OsStrExt;
 use std::ffi::OsStr;
@@ -20,11 +20,11 @@ const VK_Q: u32 = 81;
 const MOD_ALT: u32 = 0x0001;
 
 pub fn register_apphotkey(h: HWND){
-	unsafe { user32::RegisterHotKey(h, HOT_KEY_ID, MOD_ALT, VK_Q); };
+    unsafe { user32::RegisterHotKey(h, HOT_KEY_ID, MOD_ALT, VK_Q); };
 }
 
 pub fn unregister_apphotkey(h: HWND){
-	unsafe { user32::UnregisterHotKey(h, HOT_KEY_ID); };
+    unsafe { user32::UnregisterHotKey(h, HOT_KEY_ID); };
 }
 
 pub fn to_wstring(text: &str) -> *const u16 {
@@ -36,49 +36,12 @@ pub fn to_wstring(text: &str) -> *const u16 {
 }
 
 pub fn simulate_ctrl_c() {
-	press_key(Key::Physical(Physical::Control));
-	press_key(Key::Physical(Physical::C));
-	release_key(Key::Physical(Physical::C));
-	release_key(Key::Physical(Physical::Control));
-/*	
-	unsafe {
-		let mut input = INPUT { 
-			type_: winapi::INPUT_KEYBOARD, 
-			u: Default::default()
-		}; 
-		*input.ki_mut() = KEYBDINPUT { 
-			wVk: 0,
-			wScan: 0,
-			dwFlags: 0,
-			time: 0,
-			dwExtraInfo: 0
-		};
-		
-		// Press the "Ctrl" key
-		input.ki_mut().wVk = VK_CONTROL as u16;
-		user32::SendInput(1, &mut input, mem::size_of::<INPUT>() as i32);
-		
-		thread::sleep(Duration::from_millis(200));
-		
- 		// Press the "C" key
-		input.ki_mut().wVk = VK_C;
-		user32::SendInput(1, &mut input, mem::size_of::<INPUT>() as i32);
-
-		thread::sleep(Duration::from_millis(200));
-
-        // Release the "C" key
-		input.ki_mut().wVk = VK_C;
-		input.ki_mut().dwFlags = KEYEVENTF_KEYUP;
-		user32::SendInput(1, &mut input, mem::size_of::<INPUT>() as i32);
- 
-		thread::sleep(Duration::from_millis(200));
- 
-        // Release the "Ctrl" key
-		input.ki_mut().wVk = VK_CONTROL as u16;
-		input.ki_mut().dwFlags = KEYEVENTF_KEYUP;
-		user32::SendInput(1, &mut input, mem::size_of::<INPUT>() as i32);
-		
-		thread::sleep(Duration::from_millis(200));
-	};
-*/
+    press_key(Key::Physical(Physical::Control));
+    thread::sleep(Duration::from_millis(150)); // Why do I need this?
+    press_key(Key::Physical(Physical::C));
+    thread::sleep(Duration::from_millis(150));
+    release_key(Key::Physical(Physical::C));
+    thread::sleep(Duration::from_millis(150));
+    release_key(Key::Physical(Physical::Control));
+    thread::sleep(Duration::from_millis(150));
 }
