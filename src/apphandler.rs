@@ -12,12 +12,14 @@ use kiss_ui::text::*;
 use kiss_ui::button::Button;
 use kiss_ui::container::{Vertical};
 use self::clipboard_win::get_clipboard_string;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use helpers;
 use appsettings::*;
 use translator::Translator;
 
 static mut INITIALIZED: bool = false;
+static mut DIALOG_SHOWN: Option<AtomicBool> = None;
 static mut APPSETTINGS: Option<AppSettings> = None;
 lazy_static! {
     static ref SETTINGS: AppSettings = {
@@ -32,6 +34,7 @@ pub fn init(settings: AppSettings) -> WNDPROC {
     unsafe {
         if !INITIALIZED {
             APPSETTINGS = Some(settings);
+            DIALOG_SHOWN = Some(AtomicBool::new(false));
             INITIALIZED = true;
         }
     }
@@ -39,7 +42,9 @@ pub fn init(settings: AppSettings) -> WNDPROC {
 }
 
 unsafe extern "system" fn window_proc(h_wnd: HWND, msg: UINT, w_param: WPARAM, l_param: LPARAM) -> LRESULT {
-    if msg == winapi::winuser::WM_HOTKEY {
+    let dialog_shown: bool = DIALOG_SHOWN.as_ref().unwrap().load(Ordering::Relaxed);
+    if !dialog_shown && msg == winapi::winuser::WM_HOTKEY {
+        DIALOG_SHOWN.as_ref().unwrap().store(true, Ordering::Relaxed);
         helpers::simulate_ctrl_c();
         let text = get_clipboard_string().unwrap();
         if text != "" {
@@ -70,6 +75,7 @@ unsafe extern "system" fn window_proc(h_wnd: HWND, msg: UINT, w_param: WPARAM, l
                 .set_title("HandyTranslator")
                 .set_size_pixels(580, 390)
             });
+            DIALOG_SHOWN.as_ref().unwrap().store(false, Ordering::Relaxed);
         }
     }
     match msg {
