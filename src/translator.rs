@@ -14,7 +14,6 @@ pub struct Translator {
     http_client: Client,
     stsclient: StsClient
 }
-unsafe impl Sync for Translator {}
 
 impl Translator {
     pub fn new(

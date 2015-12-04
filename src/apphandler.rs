@@ -12,40 +12,29 @@ use kiss_ui::text::*;
 use kiss_ui::button::Button;
 use kiss_ui::container::{Vertical};
 use self::clipboard_win::get_clipboard_string;
-use std::cell::{Cell,RefCell};
-use std::sync::Arc;
-use std::sync::atomic::{AtomicBool,Ordering};
-use std::borrow::Borrow;
 
 use helpers;
 use appsettings::*;
 use translator::Translator;
 
+static mut INITIALIZED: bool = false;
+static mut APPSETTINGS: Option<AppSettings> = None;
 lazy_static! {
-    static ref STARTED: AtomicBool = AtomicBool::new(false);
-
-    static ref APPSETTINGS: Arc<Cell<Option<AppSettings>>> = Arc::new(Cell::new(None));
-
     static ref SETTINGS: AppSettings = {
-        APPSETTINGS.borrow().get().unwrap().clone()
+        unsafe { APPSETTINGS.as_ref().unwrap().clone() }
     };
-
-    static ref TRANSLATOR: Arc<Option<Translator>> = Arc::new(None);
+    static ref TRANSLATOR: Translator = {
+         Translator::new(SETTINGS.sts_url, SETTINGS.client_id, SETTINGS.client_secret, SETTINGS.scope, SETTINGS.translator_url)
+    };
 }
 
 pub fn init(settings: AppSettings) -> WNDPROC {
-    assert_eq!(STARTED.load(Ordering::Relaxed), false);
-
-    APPSETTINGS.borrow().set(Some(settings));
-    *Arc::get_mut(&mut TRANSLATOR).unwrap() = Some(Translator::new(
-        SETTINGS.sts_url,
-        SETTINGS.client_id,
-        SETTINGS.client_secret,
-        SETTINGS.scope,
-        SETTINGS.translator_url));
-
-    STARTED.store(true, Ordering::Relaxed);
-
+    unsafe {
+        if !INITIALIZED {
+            APPSETTINGS = Some(settings);
+            INITIALIZED = true;
+        }
+    }
     Some(window_proc)
 }
 
@@ -54,8 +43,7 @@ unsafe extern "system" fn window_proc(h_wnd: HWND, msg: UINT, w_param: WPARAM, l
         helpers::simulate_ctrl_c();
         let text = get_clipboard_string().unwrap();
         if text != "" {
-            let translated = TRANSLATOR.borrow().unwrap()
-                .translate(text, SETTINGS.source_lang, SETTINGS.target_lang);
+            let translated = TRANSLATOR.translate(text, SETTINGS.source_lang, SETTINGS.target_lang);
             kiss_ui::show_gui(|| {
                 Dialog::new(
                     Vertical::new(
@@ -100,8 +88,7 @@ fn translate_clicked(btn: Button) {
         .get_child("translated").unwrap()
         .try_downcast::<TextBox>().ok().expect("'translated' is not a TextBox.");
     let text = to_translate_tb.get_text();
-    let translated = TRANSLATOR.borrow().unwrap()
-        .translate((*text).to_string(), SETTINGS.source_lang, SETTINGS.target_lang);
+    let translated = TRANSLATOR.translate((*text).to_string(), SETTINGS.source_lang, SETTINGS.target_lang);
 
     translated_tb.set_text(&translated);
 }

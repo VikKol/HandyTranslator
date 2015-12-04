@@ -9,7 +9,6 @@ use std::io::prelude::*;
 use std::error::Error;
 use std::collections::BTreeMap;
 use std::cell::RefCell;
-use std::ops::Deref;
 
 pub struct StsClient {
     base_url: &'static str,
@@ -17,6 +16,7 @@ pub struct StsClient {
     http_client: Client,
     token: RefCell<Option<StsToken>>
 }
+unsafe impl Sync for StsClient {}
 
 #[derive(Clone)]
 pub struct StsToken {
@@ -57,7 +57,7 @@ impl StsClient {
             if let Err(why) = response.read_to_string(&mut content) {
                 return Err(format!("Failed to read the response: {}", Error::description(&why)))
             }
-            let token_mut = self.token.borrow_mut();
+            let mut token_mut = self.token.borrow_mut();
             *token_mut = Some(self.deserialize_content(&content));
             Ok(token_mut.as_ref().unwrap().clone())
         } else {
