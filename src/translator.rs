@@ -15,6 +15,8 @@ pub struct Translator {
     stsclient: StsClient
 }
 
+pub type TranslatorResponse = Result<String, String>;
+
 impl Translator {
     pub fn new(
         sts_url: &'static str,
@@ -30,13 +32,13 @@ impl Translator {
         }
     }
 
-    pub fn translate(&self, text: String, from: &'static str, to: &'static str) -> String {
+    pub fn translate(&self, text: String, from: &'static str, to: &'static str) -> TranslatorResponse {
         let mut token: String;
         if let Some(ststoken) = self.stsclient.get_access_token() {
             token = ststoken.access_token;
         } else {
             match self.stsclient.refresh_token() {
-                Err(why) => return why,
+                Err(why) => return Err(why),
                 Ok(response) => token = response.access_token
             };
         }
@@ -57,7 +59,7 @@ impl Translator {
         let mut response = translate_func(&token, &self.http_client, &*self.url);
         if response.status == StatusCode::Unauthorized {
             match self.stsclient.refresh_token() {
-                Err(why) => return why,
+                Err(why) => return Err(why),
                 Ok(response) => token = response.access_token
             };
             response = translate_func(&token, &self.http_client, &*self.url);
@@ -65,21 +67,21 @@ impl Translator {
 
         let mut content = String::new();
         match response.read_to_string(&mut content) {
-            Err(why) => Error::description(&why).to_string(),
+            Err(why) => Err(Error::description(&why).to_string()),
             Ok(_) => if response.status == StatusCode::Ok {
                 self.unwrap_from_xml(&content)
             } else {
-                format!("StatusCode: {0}; Response: {1}", response.status, content)
+                Err(format!("StatusCode: {0}; Response: {1}", response.status, content))
             }
         }
     }
 
-    fn unwrap_from_xml(&self, xml: &str) -> String {
+    fn unwrap_from_xml(&self, xml: &str) -> TranslatorResponse {
         let parser = EventReader::from_str(xml);
         let chars = parser.into_iter().skip(2).next().unwrap();
         match chars {
-            Ok(XmlEvent::Characters(result)) => result.clone(),
-            _ => "Failed to parse xml.".to_owned()
+            Ok(XmlEvent::Characters(result)) => Ok(result.clone()),
+            _ => Err("Failed to parse xml.".to_owned())
         }
     }
 }

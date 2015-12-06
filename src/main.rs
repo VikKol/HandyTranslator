@@ -1,14 +1,11 @@
 #![no_main]
-
-#[macro_use]
-extern crate lazy_static;
-#[macro_use]
-extern crate kiss_ui;
-
+#[macro_use]extern crate lazy_static;
+#[macro_use]extern crate kiss_ui;
 extern crate winapi;
 extern crate user32;
 use winapi::{c_int,HWND,HINSTANCE,LPSTR};
 
+mod ffi;
 mod appsettings;
 mod window;
 mod helpers;
@@ -32,6 +29,7 @@ pub extern "system" fn WinMain(_: HINSTANCE, _: HINSTANCE, _: LPSTR, _: c_int) -
     let hanlder = apphandler::init(settings);
     let wnd_handle: HWND = window::create_background("HandyTranslator", hanlder);
 
+    helpers::add_tray_icon(wnd_handle, "HandyTranslator");
     helpers::register_apphotkey(wnd_handle);
 
     let mut msg = window::create_window_msg();
@@ -42,6 +40,7 @@ pub extern "system" fn WinMain(_: HINSTANCE, _: HINSTANCE, _: LPSTR, _: c_int) -
         }
     }
 
+    helpers::remove_tray_icon(wnd_handle);
     helpers::unregister_apphotkey(wnd_handle);
     0
 }

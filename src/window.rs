@@ -37,10 +37,10 @@ pub fn create_window(title: &'static str, visible: bool, width: i32, height: i32
     let h_wnd_desktop = unsafe { user32::GetDesktopWindow() };
     let window_flags = if visible { WS_OVERLAPPEDWINDOW | WS_VISIBLE } else { WS_OVERLAPPEDWINDOW };
     unsafe {
-        user32::CreateWindowExA(
+        user32::CreateWindowExW(
             0,
-            class_name.as_ptr() as *mut _,
-            title.as_ptr() as *mut _,
+            helpers::to_wstring(&class_name),
+            helpers::to_wstring(&title),
             window_flags,
             CW_USEDEFAULT,
             CW_USEDEFAULT,
