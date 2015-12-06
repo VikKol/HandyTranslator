@@ -57,7 +57,7 @@ impl Translator {
         };
 
         let mut response = translate_func(&token, &self.http_client, &*self.url);
-        if response.status == StatusCode::Unauthorized {
+        if response.status == StatusCode::BadRequest {
             match self.stsclient.refresh_token() {
                 Err(why) => return Err(why),
                 Ok(response) => token = response.access_token
