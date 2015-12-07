@@ -46,22 +46,25 @@ impl StsClient {
     }
 
     pub fn refresh_token(&self) -> StsResponse {
-        let mut response = self.http_client
+        match self.http_client
             .post(self.base_url)
             .body(&self.request_details)
             .send()
-            .unwrap();
-
-        if response.status == StatusCode::Ok {
-            let mut content = String::new();
-            if let Err(why) = response.read_to_string(&mut content) {
-                return Err(format!("Failed to read the response: {}", Error::description(&why)))
-            }
-            let mut token_mut = self.token.borrow_mut();
-            *token_mut = Some(self.deserialize_content(&content));
-            Ok(token_mut.as_ref().unwrap().clone())
-        } else {
-            Err(format!("{:?}", response.status_raw()))
+        {
+            Ok(mut response) => {
+                if response.status == StatusCode::Ok {
+                    let mut content = String::new();
+                    if let Err(why) = response.read_to_string(&mut content) {
+                        return Err(format!("Failed to read the response: {}", Error::description(&why)))
+                    }
+                    let mut token_mut = self.token.borrow_mut();
+                    *token_mut = Some(self.deserialize_content(&content));
+                    Ok(token_mut.as_ref().unwrap().clone())
+                } else {
+                    Err(format!("{:?}", response.status_raw()))
+                }
+            },
+            Err(why) => Err(Error::description(&why).to_string())
         }
     }
 
