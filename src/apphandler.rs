@@ -76,37 +76,38 @@ unsafe extern "system" fn window_proc(h_wnd: HWND, msg: UINT, w_param: WPARAM, l
 fn handle_translation() {
     unsafe { DIALOG_LOCK.as_ref().unwrap().store(true, Ordering::Relaxed); };
     helpers::simulate_ctrl_c();
-    let text = get_clipboard_string().unwrap();
-    if text != "" {
-        let translated = TRANSLATOR
-            .translate(text, SETTINGS.source_lang, SETTINGS.target_lang)
-            .unwrap_or_else(|err| {err});
-        kiss_ui::show_gui(|| {
-            Dialog::new(
-                Vertical::new(
-                    children![
-                        TextBox::new()
-                            .set_multiline(true)
-                            .set_visible_columns(49)
-                            .set_visible_lines(8)
-                            .set_name("to_translate"),
-                        Button::new()
-                            .set_label("Translate")
-                            .set_name("translate_btn")
-                            .set_onclick(translate_clicked),
-                        TextBox::new()
-                            .set_text(&translated)
-                            .set_multiline(true)
-                            .set_visible_columns(49)
-                            .set_visible_lines(9)
-                            .set_name("translated"),
-                    ]
+    if let Ok(text) = get_clipboard_string() {
+        if text != "" {
+            let translated = TRANSLATOR
+                .translate(text, SETTINGS.source_lang, SETTINGS.target_lang)
+                .unwrap_or_else(|err| {err});
+            kiss_ui::show_gui(|| {
+                Dialog::new(
+                    Vertical::new(
+                        children![
+                            TextBox::new()
+                                .set_multiline(true)
+                                .set_visible_columns(49)
+                                .set_visible_lines(8)
+                                .set_name("to_translate"),
+                            Button::new()
+                                .set_label("Translate")
+                                .set_name("translate_btn")
+                                .set_onclick(translate_clicked),
+                            TextBox::new()
+                                .set_text(&translated)
+                                .set_multiline(true)
+                                .set_visible_columns(49)
+                                .set_visible_lines(9)
+                                .set_name("translated"),
+                        ]
+                    )
+                    .set_elem_spacing_pixels(10)
                 )
-                .set_elem_spacing_pixels(10)
-            )
-            .set_title("HandyTranslator")
-            .set_size_pixels(580, 390)
-        });
+                .set_title("HandyTranslator")
+                .set_size_pixels(580, 390)
+            });
+        }
     }
     unsafe { DIALOG_LOCK.as_ref().unwrap().store(false, Ordering::Relaxed); };
 }
