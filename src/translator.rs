@@ -63,7 +63,7 @@ impl Translator {
             .get(&*requiest_url)
             .headers(headers)
             .send()
-            .map_err(|err| format!("{:?}", err))
+            .map_err(|err| format!("translate_request error: {:?}", err))
     }
 
     fn unwrap_from_xml(&self, xml: &str) -> TranslatorResponse {

@@ -12,7 +12,6 @@ use std::cell::RefCell;
 pub struct StsClient {
     base_url: &'static str,
     request_details: String,
-    http_client: Client,
     token: RefCell<Option<StsToken>>
 }
 unsafe impl Sync for StsClient {}
@@ -35,7 +34,6 @@ impl StsClient {
                                       percent_encode(client_id.to_string().as_bytes(), FORM_URLENCODED_ENCODE_SET),
                                       percent_encode(client_secret.to_string().as_bytes(), FORM_URLENCODED_ENCODE_SET),
                                       scope),
-            http_client: Client::new(),
             token: RefCell::new(None)
         }
     }
@@ -45,7 +43,7 @@ impl StsClient {
     }
 
     pub fn refresh_token(&self) -> StsResponse {
-        self.http_client
+        Client::new()
             .post(self.base_url)
             .body(&self.request_details)
             .send()
