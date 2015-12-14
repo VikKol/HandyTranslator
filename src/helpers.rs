@@ -34,13 +34,13 @@ pub fn to_wstring(text: &str) -> *const u16 {
 
 pub fn simulate_ctrl_c() {
     press_key(Key::Physical(Physical::Control));
-    thread::sleep(Duration::from_millis(150)); // Why do I need this?
+    thread::sleep(Duration::from_millis(200)); // Why do I need this?
     press_key(Key::Physical(Physical::C));
-    thread::sleep(Duration::from_millis(150));
+    thread::sleep(Duration::from_millis(200));
     release_key(Key::Physical(Physical::C));
-    thread::sleep(Duration::from_millis(150));
+    thread::sleep(Duration::from_millis(200));
     release_key(Key::Physical(Physical::Control));
-    thread::sleep(Duration::from_millis(150));
+    thread::sleep(Duration::from_millis(200));
 }
 
 pub fn add_tray_icon(hwnd: HWND, tip: &'static str) {

@@ -79,13 +79,14 @@ fn handle_translation() {
     if let Ok(text) = get_clipboard_string() {
         if text != "" {
             let translated = TRANSLATOR
-                .translate(text, SETTINGS.source_lang, SETTINGS.target_lang)
+                .translate(&text, SETTINGS.source_lang, SETTINGS.target_lang)
                 .unwrap_or_else(|err| {err});
             kiss_ui::show_gui(|| {
                 Dialog::new(
                     Vertical::new(
                         children![
                             TextBox::new()
+                                .set_text(&text)
                                 .set_multiline(true)
                                 .set_visible_columns(49)
                                 .set_visible_lines(8)
@@ -122,7 +123,7 @@ fn translate_clicked(btn: Button) {
         .try_downcast::<TextBox>().ok().expect("'translated' is not a TextBox.");
     let text = to_translate_tb.get_text();
     let translated = TRANSLATOR
-        .translate((*text).to_string(), SETTINGS.source_lang, SETTINGS.target_lang)
+        .translate(&*text, SETTINGS.source_lang, SETTINGS.target_lang)
         .unwrap_or_else(|err| {err});
 
     translated_tb.set_text(&translated);
